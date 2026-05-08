@@ -1,3 +1,4 @@
+import asyncio
 import argparse
 from scanner import Detector, ScanConfig
 
@@ -29,4 +30,4 @@ config = ScanConfig(
 )
 
 detect = Detector.gateway(config)
-detect()
+asyncio.run(detect())

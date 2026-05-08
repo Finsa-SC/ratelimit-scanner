@@ -9,7 +9,7 @@ import asyncio
 class ScanConfig:
     domain: str = None
     timeout: float = 3.0
-    burst_size: int = 20
+    burst_size: int = 5
 
 class Detector:
     def __init__(self, config: ScanConfig):
@@ -26,6 +26,7 @@ class Detector:
     async def _send_single_request(self, client):
         try:
             res = await client.get(self.url, timeout=self.timeout)
+            print(res.status_code)
             return res.status_code
         except Exception:
             return 999
@@ -37,9 +38,8 @@ class Detector:
         async with httpx.AsyncClient() as client:
             while True:
                 task = [self._send_single_request(client) for _ in range(self.burst_size)]
-                results = await asyncio.gather(*task)
-
-                for status in results:
+                for future in asyncio.as_completed(task):
+                    status = await future
                     count += 1
                     if status != 200:
                         print(f"[*] Rate limiting triggered at request {count}")
